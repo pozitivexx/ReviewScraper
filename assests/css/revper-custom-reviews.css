@@ -1,0 +1,166 @@
+#revper_reviews-revper-reviews .inside {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+.revper__container {
+	padding: 6px 12px 12px;
+}
+
+.revper__loading-screen {
+	display: grid;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	background: #ffffffba;
+}
+
+.revper__loading-screen.hide {
+	display: none;
+}
+
+.revper_listing_to_scrape {
+	padding: 100px 50px;
+	text-align: center;
+	background: #fffd;
+	margin-top: 23px;
+	max-width: 500px;
+}
+
+.lds-ring {
+	display: inline-block;
+	position: relative;
+	width: 80px;
+	height: 80px;
+}
+
+.lds-ring div {
+	box-sizing: border-box;
+	display: block;
+	position: absolute;
+	width: 64px;
+	height: 64px;
+	margin: 8px;
+	border: 8px solid #017cba;
+	border-radius: 50%;
+	animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+	border-color: #017cba transparent transparent transparent;
+}
+
+.lds-ring div:nth-child(1) {
+	animation-delay: -0.45s;
+}
+
+.lds-ring div:nth-child(2) {
+	animation-delay: -0.3s;
+}
+
+.lds-ring div:nth-child(3) {
+	animation-delay: -0.15s;
+}
+
+@keyframes lds-ring {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.revper__reviews-buttons ul {
+	display: flex;
+	justify-content: space-between;
+}
+
+.revper__reviews-buttons ul li {
+	padding: 10px;
+	border: 1px solid #fff;
+	width: 20%;
+	border-collapse: separate;
+	background: #41A6DF;
+	color: #fff;
+	text-align: center;
+	font-weight: bold;
+	cursor: pointer;
+	flex-basis: 100%;
+}
+
+.revper__reviews-buttons ul li.active,
+.revper__reviews-buttons ul li:hover {
+	background: #2f3745;
+}
+
+.revper__reviews-buttons ul li span {
+	padding: 0 4px 0 8px;
+	color: #fff;
+}
+
+.revper__reviews-tabs ul li {
+	padding: 15px 20px;
+	display: none;
+}
+
+.revper__reviews-tabs ul li.active {
+	display: block;
+}
+
+.revper__reviews-tabs ul li.facebook,
+.revper__reviews-tabs ul li.google {
+	background: none;
+}
+
+.revper__heading-domain {
+	font-weight: 700;
+	color: #2f3746;
+}
+
+.revper__reviews-buttons ul li::first-letter,
+.revper__heading-domain::first-letter {
+	text-transform: capitalize;
+}
+
+.revper__heading-total-reviews {
+	font-size: 14px;
+}
+
+.revper__reviews-tabs .reviews-section .review-thumbnail img {
+	width: 100%;
+}
+
+.revper__review-score {
+	float: right;
+	background: #73cf42;
+	color: #fff;
+	border-radius: 3px;
+	padding: 2px 15px;
+	line-height: 20px !important;
+}
+
+.revper__review-score[data-count="1"] {
+	background: rgb(222, 145, 71);
+}
+
+.revper__review-score[data-count="2"] {
+	background: rgb(222, 145, 71);
+}
+
+.revper__review-score[data-count="3"] {
+	background: rgb(222, 196, 53);
+}
+
+.revper__review-score[data-count="4"] {
+	background: rgb(197, 222, 53);
+}
+
+.revper__review-score span {
+	color: #fff;
+	font-weight: bold;
+	padding-right: 0;
+}
+
+.revper__review-score i {
+	font-size: 12px !important;
+}
