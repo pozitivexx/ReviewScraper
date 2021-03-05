@@ -94,60 +94,24 @@ class revper_admin extends RevperController {
 			}
 		}
 
-		$URL      = $this->ApiURL . 'get?key=' . $key['content'];
-		$response = json_decode(
-			wp_remote_retrieve_body(
-				wp_remote_get( $URL )
-			), true );
+		$result = $this->revper_get_review( $key['content'], $post_id, $product );
 
-		if ( ! $response || ! $response['result'] ) {
-
-			if ( isset( $response['key'] ) && ! $response['key'] ) {
+		if ( $result['result'] ) {
+			wp_send_json( [
+				'result'  => true,
+				'content' => $result['content']['imported'] . "/" . $result['content']['total'] . " imported successfully (" . $result['content']['exist'] . " exists)",
+				'count'   => $result['content']
+			] );
+		} else {
+			if ( isset( $result['key'] ) && ! $result['key'] ) {
 				// key is invalid
 				delete_post_meta( $post_id, $product . "_key" );
 				dbg( $product . ": removed invalid api key" );
 			}
 
-			wp_send_json( [ 'result' => false, 'content' => $response['content']??null ] );
+			wp_send_json( [ 'result' => false, 'content' => $result['content']??null ] );
 			wp_die();
 		}
-
-		$count = [
-			'total'    => 0,
-			'imported' => 0,
-			'exist'    => 0,
-		];
-
-		foreach ( $response['content']['reviews'] AS $key => $val ) {
-			$count['total'] ++;
-
-			if ( ! count( get_comments( array( 'meta_key' => 'revper_id', 'meta_value' => $val['ID'] ) ) ) ) {
-
-				$review_args = [
-					'comment_post_ID' => $post_id,
-					'comment_content' => wp_strip_all_tags( $val['v_review'] ),
-					'comment_type'    => 'revper_' . $product,
-					'comment_meta'    => [
-						'revper_id'           => $val['ID'],
-						'revper_author_name'  => $val['v_name'],
-						'revper_author_image' => $val['v_image'],
-						'revper_review_score' => $val['v_score'],
-					]
-				];
-				wp_insert_comment( $review_args );
-
-				$count['imported'] ++;
-			} else {
-				//pr($val['ID'],0);
-				$count['exist'] ++;
-			}
-		}
-
-		wp_send_json( [
-			'result'  => true,
-			'content' => $count['imported'] . "/" . $count['total'] . " imported successfully (" . $count['exist'] . " exists)",
-			'count'   => $count
-		] );
 		wp_die();
 
 	}

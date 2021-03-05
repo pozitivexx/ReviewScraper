@@ -2,7 +2,7 @@
 /*
 Plugin Name: ListingPro Review Scraper
 Plugin URI:
-Description: This plugin Only compatible With listingpro Theme By FOL.
+Description: This plugin only compatible with listingpro Theme By FOL.
 Version: 1.0
 Author: FOL (Dev Team)
 Author URI: https://williamsmedia.co
@@ -14,7 +14,7 @@ include WP_PLUGIN_DIR . '/listingpro-reviewscraper/lib/abstract.class.revper.php
 
 function dbg( $msg ) {
 	if (is_array($msg)) $msg = var_export($msg, true);
-	$debugfile = $_SERVER['DOCUMENT_ROOT'] . "/debug_reviewscraper.log";
+	$debugfile = WP_PLUGIN_DIR . '/listingpro-reviewscraper/debug_reviewscraper.log';
 	$msg       = date( 'Y-m-d H:i:s' ) . " $msg\n";
 	//echo $msg;
 	file_put_contents( $debugfile, $msg, FILE_APPEND );
@@ -48,13 +48,23 @@ if ( ! function_exists( 'vd' ) ) {
 
 }
 
-if ( is_admin() ) {
-	include WP_PLUGIN_DIR . '/listingpro-reviewscraper/lib/revper.admin.class.php';
-
-	new revper_admin();
-
-} else {
-	include WP_PLUGIN_DIR . '/listingpro-reviewscraper/lib/revper.class.php';
-
-	$revper = new revper();
+class revper_load
+{
+	protected static $instance = NULL;
+	public static function get_instance()
+	{
+		if ( null === self::$instance )
+		{
+			if ( is_admin() ) {
+				include WP_PLUGIN_DIR . '/listingpro-reviewscraper/lib/revper.admin.class.php';
+				self::$instance = new revper_admin();
+			} else {
+				include WP_PLUGIN_DIR . '/listingpro-reviewscraper/lib/revper.class.php';
+				self::$instance = new revper();
+			}
+		}
+		return self::$instance;
+	}
 }
+
+$revper = revper_load::get_instance();

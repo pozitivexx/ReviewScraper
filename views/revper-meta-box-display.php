@@ -26,6 +26,10 @@ global $post;
 							case "google":echo '<span>https://www.google.com/maps/place/****</span>';break;
 							case "iheartjane":echo '<span>3333</span>';break;
 							case "weedmaps":echo '<span>https://weedmaps.com/****</span>';break;
+							case "yelp":echo '<span>https://www.yelp.com/biz/****</span>';break;
+							case "tripadvisor":echo '<span>https://www.tripadvisor.com/****</span>';break;
+							case "facebook":echo '<span>https://www.facebook.com/****</span>';break;
+							case "youtube":echo '<span>https://www.youtube.com/****</span>';break;
 						}
                         ?>
                     </th>

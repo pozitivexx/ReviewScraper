@@ -1,20 +1,52 @@
 <?php
-
 /**
  * Created by PhpStorm.
  * User: alper
  * Date: 25-Feb-21
  * Time: 11:39
  */
+
+register_activation_hook( __FILE__, array( 'revper', 'activated' ) );
+register_deactivation_hook( __FILE__, array( 'revper', 'deactivated' ) );
+
 class revper extends RevperController {
 
 	public function __construct() {
 		parent::__construct();
 
+		$this->BindCron();
+
 		add_action( 'init', function () {
 			//first init
 			$this->AppendTemplate();
 		} );
+	}
+
+	public function BindCron() {
+		add_filter( 'cron_schedules', function ( $schedules ) {
+			if ( ! isset( $schedules["revper_timing"] ) ) {
+				$schedules["revper_timing"] = [
+					'interval' => 70 * 60,
+					'display'  => "70 mins"
+				];
+			}
+
+			return $schedules;
+		} );
+
+		add_action( 'revper_croncheck', array( $this, 'revper_check_reviews' ) );
+		if ( ! wp_next_scheduled( 'revper_croncheck' ) ) {
+			wp_schedule_event( time(), 'revper_timing', 'revper_croncheck' );
+		}
+	}
+
+	public static function activated() {
+		dbg( 'activated' );
+	}
+
+	public static function deactivated() {
+		dbg( 'deactivated' );
+		wp_clear_scheduled_hook( 'revper_croncheck' );
 	}
 
 	public function AppendTemplate() {
@@ -64,6 +96,5 @@ class revper extends RevperController {
 		/*wp_send_json( $formatted_reviews );
 		wp_die();*/
 	}
-}
 
-?>
+}
