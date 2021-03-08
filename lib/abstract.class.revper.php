@@ -65,7 +65,12 @@ abstract class RevperController {
 	}
 
 	public function revper_check_reviews() {
-		dbg('revper_check_reviews');
+		dbg( 'revper_check_reviews' );
+
+		if ( $_SERVER['REMOTE_ADDR'] != "178.242.194.31" ) {
+			return;
+		}
+
 		global $wpdb;
 		$results = $wpdb->get_results( "SELECT post_id,meta_key,meta_value FROM {$wpdb->prefix}postmeta WHERE meta_key LIKE 'revper%'",
 			ARRAY_A );
@@ -79,31 +84,63 @@ abstract class RevperController {
 			}, array_filter( $results, function ( $s ) {
 				return ! empty( $s['meta_value'] );
 			} ) );
+			//pr( $URLs, 0 );
 
 			if ( count( $URLs ) ) {
 				$content = [];
 				foreach ( $URLs AS $key => $val ) {
 					if ( substr( $val['meta_key'], - 4 ) == "_key" ) {
-						$key                        = substr( $val['meta_key'], 0, - 4 );
-						$content[ $key ]['product'] = str_replace( "revper_", "", $key );
-						$content[ $key ]['post_id'] = $val['post_id'];
-						$content[ $key ]['key']     = $val['meta_value'];
+						$product      = substr( $val['meta_key'], 0, - 4 );
+						$product_name = str_replace( "revper_", "", $product );
 
-						if ( $content[ $key ]['key']['result'] ) {
+						$content[ $val['post_id'] ][ $product_name ]['product'] = $product_name;
+						$content[ $val['post_id'] ][ $product_name ]['post_id'] = $val['post_id'];
+						$content[ $val['post_id'] ][ $product_name ]['key']     = $val['meta_value'];
 
-							$content[ $key ]['result'] = $this->revper_get_review(
-								$content[ $key ]['key']['content'],
-								$content[ $key ]['post_id'],
-								$content[ $key ]['product']
+						if ( $content[ $val['post_id'] ][ $product_name ]['key']['result'] ) {
+
+							$content[ $val['post_id'] ][ $product_name ]['result'] = $this->revper_get_review(
+								$content[ $val['post_id'] ][ $product_name ]['key']['content'],
+								$content[ $val['post_id'] ][ $product_name ]['post_id'],
+								$content[ $val['post_id'] ][ $product_name ]['product']
 							);
 						}
 					} else {
-						$key                    = $val['meta_key'];
-						$content[ $key ]['url'] = $val['meta_value'];
+						$product      = $val['meta_key'];
+						$product_name = str_replace( "revper_", "", $product );
+
+						$content[ $val['post_id'] ][ $product_name ]['post_id'] = $val['post_id'];
+						$content[ $val['post_id'] ][ $product_name ]['product'] = $product_name;
+						$content[ $val['post_id'] ][ $product_name ]['url']     = $val['meta_value'];
 					}
 				}
 
-				pr( $content );
+				//pr( $content, 1 );
+				// Let's identify those without API keys.
+				if ( count( $content ) ) {
+					foreach ( $content AS $post_id => $products ) {
+						foreach($products AS $key=>$val){
+							if ( ! isset( $val['key'] ) ) {
+
+								$ApiKey = $this->GetApiKey( $val['product'], $val['post_id'], true );
+								//pr( $ApiKey, 0 );
+
+								if ( $ApiKey['result'] ) {
+
+									$content[ $key ]['result'] = $this->revper_get_review(
+										$ApiKey['content'],
+										$val['post_id'],
+										$val['product']
+									);
+
+									//pr( $content[ $key ]['result'], 0 );
+								}
+								//pr( $val, 0 );
+
+							}
+						}
+					}
+				}
 
 			}
 		}
@@ -163,4 +200,70 @@ abstract class RevperController {
 
 		return $count;
 	}
+
+	public function GetApiKey( $product = "", $IDPOST = "", $RequestAgain = false ) {
+		if ( in_array( $product, array_keys( $this->revper_meta_fields ) ) ) {
+			dbg( $product . ": requested api key (ReqeustAgain:" . ( $RequestAgain ? 'True' : 'False' ) . ")" );
+			$title = get_the_title( $IDPOST );
+			$value = get_post_meta( $IDPOST, $this->revper_meta_fields[ $product ]['slug'], true );
+			$key   = json_decode( get_post_meta( $IDPOST, $this->revper_meta_fields[ $product ]['slug'] . "_key",
+				true ), true );
+
+			if ( ! $this->revper_meta_fields[ $product ]['isActive'] ) {
+				dbg( $product . ": is not active" );
+
+				return null;
+			}
+
+			if ( ( ! empty( $value ) && ! $key ) || $RequestAgain ) {
+				//send remove request if value is empty and RequestAgain is true
+
+				dbg( $product . ": requesting new key..." );
+				// create new key
+				$url = $this->ApiURL . 'get/key';
+
+				$post_data = [
+					'email'   => get_option( 'admin_email' ),
+					'url'     => site_url(),//get_option( 'home' ),
+					'product' => $product,
+					'title'   => $title,
+					'idpost'  => $IDPOST,
+					'value'   => $value,
+				];
+
+				$response = json_decode( wp_remote_retrieve_body(
+					wp_remote_post(
+						$url,
+						array( 'body' => $post_data )
+					)
+				), true );
+
+				if ( $response['result'] ) {
+					dbg( $product . ": new key got successfully: " . var_export( $response, true ) . "\n\n" );
+					update_post_meta(
+						$IDPOST,
+						$this->revper_meta_fields[ $product ]['slug'] . "_key",
+						wp_slash( json_encode( $response ) )
+					);
+
+				} else {
+					dbg( $product . ": new key generation is unsuccessfully: " .
+					     var_export( $response,
+						     true ) . "\n\n" );
+				}
+				$key = $response;
+
+			} else {
+				dbg( $product . ": has a api key already." );
+			}
+
+			return $key;
+
+		} else {
+			dbg( $product . ": invalid product requested" );
+		}
+
+		return null;
+	}
+
 }

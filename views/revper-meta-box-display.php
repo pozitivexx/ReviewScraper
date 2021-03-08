@@ -18,7 +18,7 @@ global $post;
                             style="display:block;margin-bottom:5px"
                         >
                             <strong>
-                                <?php _e( $field['name'] . ( in_array($field['domain'], ['google','iheartjane']) ? ' ID' : ' URL' ), 'revper_reviews' ); ?>
+                                <?php _e( $field['name'] . ( in_array($field['domain'], ['iheartjane']) ? ' ID' : ' URL' ), 'revper_reviews' ); ?>
                             </strong>
                         </label>
                         <?php

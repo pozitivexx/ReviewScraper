@@ -105,8 +105,8 @@ class revper_admin extends RevperController {
 		} else {
 			if ( isset( $result['key'] ) && ! $result['key'] ) {
 				// key is invalid
-				delete_post_meta( $post_id, $product . "_key" );
-				dbg( $product . ": removed invalid api key" );
+				delete_post_meta( $post_id, "revper_" . $product . "_key" );
+				dbg( $product . ": removed invalid api key: post id: $post_id meta_key: revper_" . $product );
 			}
 
 			wp_send_json( [ 'result' => false, 'content' => $result['content']??null ] );
@@ -116,67 +116,4 @@ class revper_admin extends RevperController {
 
 	}
 
-	public function GetApiKey( $product = "", $IDPOST = "", $RequestAgain = false ) {
-		if ( in_array( $product, array_keys( $this->revper_meta_fields ) ) ) {
-			dbg( $product . ": requested api key (ReqeustAgain:" . ( $RequestAgain ? 'True' : 'False' ) . ")" );
-			$title = get_the_title( $IDPOST );
-			$value = get_post_meta( $IDPOST, $this->revper_meta_fields[ $product ]['slug'], true );
-			$key   = json_decode( get_post_meta( $IDPOST, $this->revper_meta_fields[ $product ]['slug'] . "_key",
-				true ), true );
-
-			if ( ! $this->revper_meta_fields[ $product ]['isActive'] ) {
-				dbg( $product . ": is not active" );
-
-				return null;
-			}
-
-			if ( ( ! empty( $value ) && ! $key ) || $RequestAgain ) {
-				//send remove request if value is empty and RequestAgain is true
-
-				dbg( $product . ": requesting new key..." );
-				// create new key
-				$url = $this->ApiURL . 'get/key';
-
-				$post_data = [
-					'email'   => get_option( 'admin_email' ),
-					'url'     => site_url(),//get_option( 'home' ),
-					'product' => $product,
-					'title'   => $title,
-					'idpost'  => $IDPOST,
-					'value'   => $value,
-				];
-
-				$response = json_decode( wp_remote_retrieve_body(
-					wp_remote_post(
-						$url,
-						array( 'body' => $post_data )
-					)
-				), true );
-
-				if ( $response['result'] ) {
-					dbg( $product . ": new key got successfully: " . var_export( $response, true ) . "\n\n" );
-					update_post_meta(
-						$IDPOST,
-						$this->revper_meta_fields[ $product ]['slug'] . "_key",
-						wp_slash( json_encode( $response ) )
-					);
-
-				} else {
-					dbg( $product . ": new key generation is unsuccessfully: " . var_export( $response,
-							true ) . "\n\n" );
-				}
-				$key = $response;
-
-			} else {
-				dbg( $product . ": has a api key already." );
-			}
-
-			return $key;
-
-		} else {
-			dbg( $product . ": invalid product requested" );
-		}
-
-		return null;
-	}
 }
