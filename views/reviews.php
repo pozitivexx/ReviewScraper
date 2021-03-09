@@ -9,11 +9,6 @@ echo "<style id='revper-stylesheet'>".(file_get_contents(WP_PLUGIN_DIR.'/listing
 //wp_enqueue_style( 'revper-stylesheet', plugins_url( '', __FILE__ ) . '/../assests/css/revper-custom-reviews.css', array( '' ), '20170106' );
 global $revper;
 $reviews_domains = $revper->revper_get_reviews_details( get_the_ID() );
-//pr($revper->revper_meta_fields);
-//$reviews_domains = $revper->revper_get_reviews_details( get_the_ID() );
-
-//listingpro_get_all_reviews(get_the_ID());
-
 ?>
 
 <div id="submitreview" class="clearfix">
@@ -29,7 +24,7 @@ $reviews_domains = $revper->revper_get_reviews_details( get_the_ID() );
 
 					echo '<li for="'.$domain.'">';
 					echo ucfirst($domain);
-					echo '<span>'.($data['reviews_score']??5).'</span>';
+					echo '<span>'.($reviews_domains[$domain]['reviews_score']??5).'</span>';
 					echo '<i class="fa fa-star"></i>';
 					echo '</li>';
 
@@ -57,7 +52,7 @@ $reviews_domains = $revper->revper_get_reviews_details( get_the_ID() );
                             </span>
 
 						<span  class="revper__heading-total-reviews">
-                                (Total Reviews: <?php echo ($data['total_reviews']??0) ?> )
+                                (Total Reviews: <?php echo ($reviews_domains[$domain]['total_reviews']??0) ?> )
                             </span>
 					</h4>
 					<div class="reviews-section">

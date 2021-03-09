@@ -154,7 +154,7 @@ abstract class RevperController {
 		}
 
 		$count = $this->SaveReviews(
-			$response['content']['reviews'],
+			$response['content'],
 			$post_id,
 			$product
 		);
@@ -169,7 +169,7 @@ abstract class RevperController {
 			'exist'    => 0,
 		];
 
-		foreach ( $reviews AS $key => $val ) {
+		foreach ( $reviews['reviews'] AS $key => $val ) {
 			$count['total'] ++;
 
 			if ( ! count( get_comments( array( 'meta_key' => 'revper_id', 'meta_value' => $val['ID'] ) ) ) ) {
@@ -192,6 +192,10 @@ abstract class RevperController {
 				//pr($val['ID'],0);
 				$count['exist'] ++;
 			}
+		}
+
+		if ($count['imported']){
+			$this->revper_update_reviews_details($post_id, $product, $reviews['reviews_score'], $reviews['total_reviews']);
 		}
 
 		return $count;
@@ -262,4 +266,13 @@ abstract class RevperController {
 		return null;
 	}
 
+	public function revper_update_reviews_details( $post_id, $product, $review_score, $review_total ) {
+		$reviews_meta = json_decode(get_post_meta( $post_id, 'revper_review_details', true ), true);
+		$reviews_meta[ $product ] = [
+			'reviews_score' => $review_score,
+			'total_reviews' => $review_total
+		];
+
+		update_post_meta( $post_id, 'revper_review_details', json_encode($reviews_meta) );
+	}
 }

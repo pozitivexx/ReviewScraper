@@ -74,7 +74,7 @@ class revper extends RevperController {
 	}
 
 	public function revper_get_reviews_details( $post_id ) {
-		return get_post_meta( $post_id, 'revper_review_details', true );
+		return json_decode(get_post_meta( $post_id, 'revper_review_details', true ), true);
 	}
 
 	public function revper_list_reviews( $post_id, $domain ) {
