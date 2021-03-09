@@ -67,10 +67,6 @@ abstract class RevperController {
 	public function revper_check_reviews() {
 		dbg( 'revper_check_reviews' );
 
-		if ( $_SERVER['REMOTE_ADDR'] != "178.242.194.31" ) {
-			return;
-		}
-
 		global $wpdb;
 		$results = $wpdb->get_results( "SELECT post_id,meta_key,meta_value FROM {$wpdb->prefix}postmeta WHERE meta_key LIKE 'revper%'",
 			ARRAY_A );
